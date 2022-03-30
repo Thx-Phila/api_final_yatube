@@ -6,7 +6,7 @@ from .models import Group, Post
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'pub_date', 'text',  'author', 'group',)
+    list_display = ('pk', 'pub_date', 'text', 'author', 'group')
     list_editable = ('group',)
     search_fields = ('text',)
     list_filter = ('pub_date',)
