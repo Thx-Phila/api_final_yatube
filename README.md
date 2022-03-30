@@ -1,5 +1,5 @@
 Установка
-Клонируем репозиторий на локальную машину:
+Клонируем репозиторий:
 
 $ git clone https://github.com/Thx-Phila/api_final_yatube.git
 
