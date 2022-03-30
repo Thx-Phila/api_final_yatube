@@ -1,7 +1,7 @@
 Установка
 Клонируем репозиторий на локальную машину:
 
-$ git clone git@github.com:Thx-Phila/api_final_yatube.git
+$ git clone https://github.com/Thx-Phila/api_final_yatube.git
 
 Создаем виртуальное окружение:
 
