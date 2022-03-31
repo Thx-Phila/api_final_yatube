@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from posts.models import Post, Group, Comment
-from posts.models import Follow, User
+from rest_framework.validators import UniqueTogetherValidator
+
+from posts.models import Comment, Follow, Group, Post, User
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -10,32 +11,31 @@ class PostSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        fields = '__all__'
         model = Post
-        fields = ('id', 'author', 'text', 'pub_date', 'group', 'image')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = ('author', 'post')
+        model = Comment
 
 
 class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
+        fields = '__all__'
+        read_only_fields = ('title', 'slug', 'description')
         model = Group
-        fields = ('id', 'title', 'slug', 'description')
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
-
-    class Meta:
-        model = Comment
-        fields = ('id', 'author', 'post', 'text', 'created')
-        read_only_fields = ('id', 'post', 'created')
 
 
 class FollowSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
-        read_only=True,
+        queryset=User.objects.all(),
         slug_field='username',
         default=serializers.CurrentUserDefault()
     )
@@ -45,26 +45,18 @@ class FollowSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        fields = ('user', 'following',)
         model = Follow
-        fields = ('following', 'user')
-        validators = (
-            serializers.UniqueTogetherValidator(
-                queryset=model.objects.all(),
-                fields=('user', 'following'),
-                message=("Такая подписка уже существует и так")
-            ),
-        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'following',)
+            )
+        ]
 
-    def validate(self, data):
-        if data['following'] == self.context['request'].user:
+    def validate_following(self, following):
+        if self.context.get('request').user == following:
             raise serializers.ValidationError(
-                'Вы не можете подписаться на себя самого!')
-        return data
-
-
-class UserSerializer(serializers.ModelSerializer):
-    posts = serializers.StringRelatedField(many=True, read_only=True)
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'posts')
+                'Нельзя подписаться на самого себя!'
+            )
+        return following
