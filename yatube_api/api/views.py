@@ -3,6 +3,7 @@ from rest_framework import filters, viewsets
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import IsAuthenticated
 
 from posts.models import Group, Post
 
@@ -49,9 +50,13 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
     serializer_class = FollowSerializer
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('following__username',)
+    search_fields = [
+        '=user__username',
+        '=following__username',
+    ]
 
     def get_queryset(self):
         return self.request.user.follower.all()
